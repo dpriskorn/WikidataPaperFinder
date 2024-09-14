@@ -1,8 +1,11 @@
+import json
+import logging
+
 from duckduckgo_search import DDGS
 from pydantic import BaseModel
-import json
-from wikibaseintegrator import WikibaseIntegrator, wbi_backoff
 from wikibaseintegrator.wbi_helpers import search_entities, execute_sparql_query
+
+logger = logging.getLogger(__name__)
 
 
 class WPF(BaseModel):
@@ -29,13 +32,16 @@ class WPF(BaseModel):
         except json.JSONDecodeError:
             self.ai_response = {"error": "Failed to parse JSON from response"}
 
-    def generate_sparql_query(self):
+    def generate_sparql_query(self) -> None:
         if not self.is_valid_data():
             self.sparql_query = "Invalid data. Required fields: journal, year, volume, pages."
             return
+        if not self.journal_qid:
+
+            return
 
         # Extract properties using Wikidata property IDs
-        journal = self.ai_response.get("P1433", "")
+        # journal = self.ai_response.get("P1433", "")
         year = self.ai_response.get("P577", "")
         volume = self.ai_response.get("P478", "")
         pages = self.ai_response.get("P304", "")
