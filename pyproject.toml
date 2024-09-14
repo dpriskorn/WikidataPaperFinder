@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "wikidata-paper-finder"
+version = "0.1.0"
+description = "A tool for finding papers on Wikidata using SPARQL queries."
+authors = ["Nizo Priskorn <nizo.priskorn@gmail.com>"]
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python",
+    "Operating System :: OS Independent",
+]
+
+[tool.poetry.dependencies]
+python = "^3.12"  # Adjust the Python version according to your requirements
+pydantic = "^2.9.1"  # Replace with the latest compatible version
+wikibaseintegrator = "^0.12.8"  # Replace with the latest compatible version
+duckduckgo-search = "^6.2.11"
+flask = "^3.0.3"
+
+[tool.poetry.dev-dependencies]
+black = "^24.8.0"  # Replace with the latest compatible version
+
+[tool.black]
+line-length = 88
+target-version = ['py312']  # Adjust based on your Python version
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
