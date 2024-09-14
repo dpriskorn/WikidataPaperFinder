@@ -23,7 +23,9 @@ class WPF(BaseModel):
             "don't format as time, just return strings. Copy the journal name verbatim, only output the JSON: "
             f'"{self.reference_text}"'
         )
-        text = ddgs.chat(prompt, model="gpt-4o-mini")  # You can change the model as needed
+        text = ddgs.chat(
+            prompt, model="gpt-4o-mini"
+        )  # You can change the model as needed
         text = text.replace("json", "").strip()
         print(text)
         try:
@@ -34,7 +36,9 @@ class WPF(BaseModel):
 
     def generate_sparql_query(self) -> None:
         if not self.is_valid_data():
-            self.sparql_query = "Invalid data. Required fields: journal, year, volume, pages."
+            self.sparql_query = (
+                "Invalid data. Required fields: journal, year, volume, pages."
+            )
             return
         if not self.journal_qid:
 
@@ -75,33 +79,42 @@ class WPF(BaseModel):
     def search_journal_qid(self):
         journal_name = self.ai_response.get("P1433", "")
         if not journal_name:
+            logger.error("Got no journal_name")
+            raise ValueError()
             return ""
 
         search_results = search_entities(
-            search_string=journal_name,
-            search_type='item',
-            dict_result=True
+            search_string=journal_name, search_type="item", dict_result=True
         )
+        if not search_results:
+            raise ValueError()
         print(search_results)
         # Extract QID from search results
         if search_results and isinstance(search_results, list):
+            logger.debug("got search results")
             for result in search_results:
-                if 'id' in result and 'label' in result and result['label'].lower() == journal_name.lower() or result['match']['text'].lower() == journal_name.lower():
-                    return result['id']  # Return the QID of the journal
-
+                if (
+                    "id" in result
+                    and "label" in result
+                    and result["label"].lower() == journal_name.lower()
+                    or result["match"]["text"].lower() == journal_name.lower()
+                ):
+                    logger.debug("found match")
+                    self.journal_qid = result["id"]  # Return the QID of the journal
+        logger.debug("did not find match")
         return ""  # Return None if no matching journal is found
 
-    def execute_query(self, query: str):
+    def execute_query(self):
         """Execute the SPARQL query and return the result."""
         result = execute_sparql_query(
-            query=query,
+            query=self.sparql_query,
             prefix=None,
             endpoint=None,
             user_agent=None,
             max_retries=1000,
-            retry_after=60
+            retry_after=60,
         )
-        return result
+        self.query_result = result
 
     def run(self):
         # Step 1: Ask the AI for the reference details
@@ -116,8 +129,28 @@ class WPF(BaseModel):
 
         # Step 3: Generate the SPARQL query
         self.generate_sparql_query()
-        if "Invalid data" in self.sparql_query:
-            return self.sparql_query
+        if not self.sparql_query:
+            return "Could not generate sparql query"
 
         # Step 4: Execute the SPARQL query
         self.query_result = self.execute_query(self.sparql_query)
+        if self.empty_result:
+            return "Got empty result"
+
+    @property
+    def empty_result(self):
+        empty_result = {
+            "head": {
+                "vars": [
+                    "article",
+                    "articleLabel",
+                    "volume",
+                    "pages",
+                    "publicationDate",
+                ]
+            },
+            "results": {"bindings": []},
+        }
+        if not self.query_result or self.query_result == empty_result:
+            return True
+        return False

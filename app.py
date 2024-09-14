@@ -11,16 +11,16 @@ logging.basicConfig(level=config.loglevel)
 app = Flask(__name__)
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route("/", methods=["GET", "POST"])
 def index():
     result = None
-    if request.method == 'POST':
-        reference_text = request.form.get('reference_text').strip()
+    if request.method == "POST":
+        reference_text = request.form.get("reference_text").strip()
         if reference_text:
             wpf = WPF(reference_text=reference_text)  # Create an instance of WPF
             result = wpf.ask_ai()
-    return render_template('index.html', result=result)
+    return render_template("index.html", result=result)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
