@@ -1,12 +1,14 @@
 [tool.poetry]
 name = "wikidata-paper-finder"
 version = "0.1.0"
-description = "A tool for finding papers based on reference text on Wikidata using a combination of AI, Cirrussearch and SPARQL queries."
+description = "A tool for finding papers based on reference text on Wikidata using a combination of AI, Cirrussearch, and SPARQL queries."
 authors = ["Nizo Priskorn <nizo.priskorn@gmail.com>"]
 readme = "README.md"
+license = "GPL-3.0-or-later"
 classifiers = [
     "Programming Language :: Python",
     "Operating System :: OS Independent",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
 ]
 
 [tool.poetry.dependencies]
