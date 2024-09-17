@@ -160,3 +160,9 @@ class WPF(BaseModel):
         if not self.query_result or self.query_result == empty_result:
             return True
         return False
+
+    def wdqs_query_link(self):
+        if self.sparql_query:
+            return f"https://query.wikidata.org/#{quote(self.sparql_query)}"
+        else:
+            return ""
