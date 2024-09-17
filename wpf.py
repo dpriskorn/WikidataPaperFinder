@@ -1,5 +1,6 @@
 import json
 import logging
+from urllib.parse import quote
 
 from duckduckgo_search import DDGS
 from pydantic import BaseModel
@@ -36,39 +37,39 @@ class WPF(BaseModel):
 
     def generate_sparql_query(self) -> None:
         if not self.is_valid_data():
-            self.sparql_query = (
+            raise ValueError(
                 "Invalid data. Required fields: journal, year, volume, pages."
             )
-            return
         if not self.journal_qid:
-
-            return
+            raise ValueError("missing journal qid")
 
         # Extract properties using Wikidata property IDs
         # journal = self.ai_response.get("P1433", "")
-        year = self.ai_response.get("P577", "")
+        year = int(self.ai_response.get("P577", ""))
         volume = self.ai_response.get("P478", "")
-        pages = self.ai_response.get("P304", "")
-
+        # Handle weird unicode
+        pages = self.ai_response.get("P304", "").replace("\u2013", "-")
+        if "-" in pages:
+            start_page = pages.split("-")[0]
+        else:
+            start_page = pages
         self.sparql_query = f"""
         SELECT ?article ?articleLabel ?volume ?pages ?publicationDate WHERE {{
-          BIND ({year} AS ?year )
-          BIND ("{volume}" AS ?volume )
-          BIND (SUBSTR("{pages}", 1, 3) AS ?startPage )
-
-          ?article wdt:P1433 wd:{self.journal_qid};  # article is published in the specified journal
-                   wdt:P478 ?volume;      # article has volume
-                   wdt:P304 ?pages;       # article has pages
-                   wdt:P577 ?publicationDate.  # article has publication date
-
-          # Filter for the year, volume, and first 3 characters of the pages
-          FILTER(YEAR(?publicationDate) = ?year)  # Specify the year
-          FILTER(SUBSTR(?pages, 1, STRLEN(?startPage)) = ?startPage)   # Match first 3 characters of pages
-
-          # Return labels for articles and journals
-          SERVICE wikibase:label {{ bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }}
+          BIND ( wd:{self.journal_qid} AS ?journal ) .
+          BIND ( {year} AS ?year ) .
+          BIND ( "{volume}" AS ?volume ) .
+          BIND ( {start_page} AS ?startPage ) .
+          BIND ( 15 AS ?range ) .
+          
+          ?article wdt:P1433 ?journal; wdt:P478 ?volume; wdt:P304 ?pages; wdt:P577 ?publicationDate .
+        
+          FILTER( YEAR( ?publicationDate ) = ?year ) .
+          BIND( REPLACE( ?pages,"(\\\\d*).*","$1" ) AS ?start ) .
+          FILTER( ( xsd:integer(?start) < ?startPage + ?range ) && ( xsd:integer(?start) > ?startPage - ?range ) ) .
+          
+          SERVICE wikibase:label {{ bd:serviceParam wikibase:language "[AUTO_LANGUAGE],mul,en" . }}
         }}
-        LIMIT 100
+        ORDER BY ASC(xsd:integer(?start))
         """
 
     def is_valid_data(self):
@@ -81,14 +82,13 @@ class WPF(BaseModel):
         if not journal_name:
             logger.error("Got no journal_name")
             raise ValueError()
-            return ""
 
         search_results = search_entities(
             search_string=journal_name, search_type="item", dict_result=True
         )
         if not search_results:
             raise ValueError()
-        print(search_results)
+        # print(search_results)
         # Extract QID from search results
         if search_results and isinstance(search_results, list):
             logger.debug("got search results")
@@ -118,24 +118,30 @@ class WPF(BaseModel):
 
     def run(self):
         # Step 1: Ask the AI for the reference details
-        self.ask_ai()
-        if not self.is_valid_data():
-            return f"Invalid data. Required fields: journal, year, volume, pages. '{self.ai_response}'"
+        if not self.ai_response:
+            self.ask_ai()
+            if not self.is_valid_data():
+                return f"Invalid data. Required fields: journal, year, volume, pages. '{self.ai_response}'"
 
         # Step 2: Find the journal QID
-        self.journal_qid = self.search_journal_qid()
         if not self.journal_qid:
-            return f"Journal QID not found for '{self.ai_response.get('P1433', '')}'"
+            self.journal_qid = self.search_journal_qid()
+            if not self.journal_qid:
+                return f"Journal QID not found for '{self.ai_response.get('P1433', '')}'"
 
         # Step 3: Generate the SPARQL query
-        self.generate_sparql_query()
         if not self.sparql_query:
-            return "Could not generate sparql query"
+            self.generate_sparql_query()
+            if not self.sparql_query:
+                return "Could not generate sparql query"
 
         # Step 4: Execute the SPARQL query
-        self.query_result = self.execute_query(self.sparql_query)
+        if not self.query_result:
+            self.execute_query(self.sparql_query)
         if self.empty_result:
             return "Got empty result"
+        else:
+            return "Success, results were found"
 
     @property
     def empty_result(self):
