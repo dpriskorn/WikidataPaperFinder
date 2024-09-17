@@ -13,6 +13,7 @@ class WPF(BaseModel):
     reference_text: str
     ai_response: dict = {}
     journal_qid: str = ""
+    journal_label_en: str = ""
     sparql_query: str = ""
     query_result: dict = {}
 
@@ -99,10 +100,9 @@ class WPF(BaseModel):
                     and result["label"].lower() == journal_name.lower()
                     or result["match"]["text"].lower() == journal_name.lower()
                 ):
-                    logger.debug("found match")
+                    logger.debug(f'found match: {result["id"]}')
                     self.journal_qid = result["id"]  # Return the QID of the journal
-        logger.debug("did not find match")
-        return ""  # Return None if no matching journal is found
+                    self.journal_label_en = result["label"]
 
     def execute_query(self):
         """Execute the SPARQL query and return the result."""
@@ -125,7 +125,7 @@ class WPF(BaseModel):
 
         # Step 2: Find the journal QID
         if not self.journal_qid:
-            self.journal_qid = self.search_journal_qid()
+            self.search_journal_qid()
             if not self.journal_qid:
                 return f"Journal QID not found for '{self.ai_response.get('P1433', '')}'"
 
@@ -137,7 +137,7 @@ class WPF(BaseModel):
 
         # Step 4: Execute the SPARQL query
         if not self.query_result:
-            self.execute_query(self.sparql_query)
+            self.execute_query()
         if self.empty_result:
             return "Got empty result"
         else:
@@ -164,5 +164,12 @@ class WPF(BaseModel):
     def wdqs_query_link(self):
         if self.sparql_query:
             return f"https://query.wikidata.org/#{quote(self.sparql_query)}"
+        else:
+            return ""
+
+    @property
+    def wikidata_journal_link(self):
+        if self.journal_qid:
+            return f"https://wikidata.org/wiki/{self.journal_qid}"
         else:
             return ""

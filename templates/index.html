@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reference Search</title>
+    {% include 'css.html' %}
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Reference Search</h1>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <!-- Use GET method by default -->
+                        <form action="/search" method="get">
+                            <div class="mb-3">
+                                <label for="reference_text" class="form-label">Enter Reference Text</label>
+                                <!-- Larger textarea with more rows -->
+                                <textarea class="form-control" id="reference_text" name="reference_text" rows="8" placeholder="Enter reference text here..."></textarea>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary btn-lg">Search</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'footer.html' %}

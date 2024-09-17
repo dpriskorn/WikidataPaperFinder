@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WDQS Results</title>
+    <!-- Include local Bootstrap CSS -->
+    <link href="{{ url_for('static', filename='bootstrap/bootstrap-5.3.3-dist/css/bootstrap.min.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">WDQS Results</h1>
+        {% if wpf.query_result.results.bindings %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Article</th>
+                        <th>Article Label</th>
+                        <th>Volume</th>
+                        <th>Pages</th>
+                        <th>Publication Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for binding in wpf.query_result.results.bindings %}
+                        <tr>
+                            <td><a href="{{ binding.article.value }}">{{ binding.article.value }}</a></td>
+                            <td>{{ binding.articleLabel.value }}</td>
+                            <td>{{ binding.volume.value }}</td>
+                            <td>{{ binding.pages.value }}</td>
+                            <!-- Simplify the date format -->
+                            <td>{{ binding.publicationDate.value | replace('T00:00:00Z', '') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No results found.</p>
+        {% endif %}
+
+        <!-- Display the reference text -->
+        <div class="mt-4">
+            <h4>Reference Text</h4>
+            <p>{{ request.args.get('reference_text') or 'No reference text provided.' }}</p>
+        </div>
+
+        <!-- Display the journal name and link -->
+        <div class="mt-4">
+            <h4>Identified journal from CirrusSearch</h4>
+            {% if wpf.journal_label_en and wpf.wikidata_journal_link %}
+                <a href="{{ wpf.wikidata_journal_link }}" target="_blank">{{ wpf.journal_label_en }}</a>
+            {% else %}
+                <p>No journal could be found using CirrusSearch,
+                    please go to wikidata.org and make sure the journal
+                    exists and has the alias used in the reference.</p>
+            {% endif %}
+        </div>
+
+        <!-- Link to the SPARQL query -->
+        <div class="mt-4">
+            <h4>SPARQL Query</h4>
+            <a href="{{ wpf.wdqs_query_link() }}" target="_blank">Open query in WDQS</a>
+        </div>
+    </div>
+
+    <!-- Include local Bootstrap JS -->
+    <script src="{{ url_for('static', filename='bootstrap/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>
