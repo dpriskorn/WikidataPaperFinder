@@ -127,7 +127,9 @@ class WPF(BaseModel):
         if not self.journal_qid:
             self.search_journal_qid()
             if not self.journal_qid:
-                return f"Journal QID not found for '{self.ai_response.get('P1433', '')}'"
+                return (
+                    f"Journal QID not found for '{self.ai_response.get('P1433', '')}'"
+                )
 
         # Step 3: Generate the SPARQL query
         if not self.sparql_query:
