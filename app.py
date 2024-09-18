@@ -1,5 +1,5 @@
 import logging
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, abort
 import config
 from wpf import WPF
 
@@ -8,6 +8,10 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+@app.errorhandler(500)
+def internal_error(error):
+    # Render the custom 500 error page
+    return render_template('500.html'), 500
 
 @app.route("/", methods=["GET"])
 def index():
@@ -24,8 +28,10 @@ def search():
     if reference_text:
         reference_text = reference_text.strip()
         wpf = WPF(reference_text=reference_text)  # Create an instance of WPF
-        result = wpf.run()
-        logger.info(result)
+        wpf.run()
+        if not wpf.status:
+            abort(500)
+        logger.info(wpf.status)
         # print(wpf.query_result)
         # We pass the whole object here to make life easier
         return render_template("results.html", wpf=wpf)

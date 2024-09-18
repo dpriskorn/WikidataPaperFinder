@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>500 Internal Server Error</title>
+    <link href="{{ url_for('static', filename='bootstrap/bootstrap-5.3.3-dist/css/bootstrap.min.css') }}" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">500 Internal Server Error</h1>
+        <div class="alert alert-danger">
+            <h4 class="alert-heading">Oops! Something went wrong.</h4>
+            <p>We encountered an unexpected error while processing your request. Please try again later.</p>
+            <hr>
+            <p class="mb-0">If the problem persists, please <a href="https://github.com/dpriskorn/WikidataPaperFinder/issues" target="_blank">open an issue on GitHub</a> and provide details about what happened.</p>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='bootstrap/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js') }}"></script>
+</body>
+</html>
