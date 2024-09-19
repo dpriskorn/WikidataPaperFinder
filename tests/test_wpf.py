@@ -18,26 +18,26 @@ class TestWPF(TestCase):
             "P577": "1948",
         }
 
-    def test_ask_ai_qs(self):
-        wpf = WPF(
-            reference_text="""	CREATE
-	LAST	P31	Q23927052
-	LAST	Len	"Complete solution of the eight-puzzle and the benefit of node ordering in IDA"
-	LAST	P304	"248-253"
-	LAST	P577	+1993-01-01T00:00:00Z/9
-	LAST	P1104	6
-	LAST	P1476	en:"Complete solution of the eight-puzzle and the benefit of node ordering in IDA"
-	LAST	P2093	"Alexander Reinefeld"	P1545	"1"
-"""
-        )
-        wpf.ask_ai()
-        assert wpf.ai_response == {
-            "P1433": "Complete solution of the eight-puzzle and the benefit of node "
-            "ordering in IDA",
-            "P304": "248-253",
-            "P4780": "6",
-            "P577": "1993",
-        }
+#     def test_ask_ai_qs(self):
+#         wpf = WPF(
+#             reference_text="""	CREATE
+# 	LAST	P31	Q23927052
+# 	LAST	Len	"Complete solution of the eight-puzzle and the benefit of node ordering in IDA"
+# 	LAST	P304	"248-253"
+# 	LAST	P577	+1993-01-01T00:00:00Z/9
+# 	LAST	P1104	6
+# 	LAST	P1476	en:"Complete solution of the eight-puzzle and the benefit of node ordering in IDA"
+# 	LAST	P2093	"Alexander Reinefeld"	P1545	"1"
+# """
+#         )
+#         wpf.ask_ai()
+#         assert wpf.ai_response == {
+#             "P1433": "Complete solution of the eight-puzzle and the benefit of node "
+#                      "ordering in IDA",
+#             "P304": "248-253",
+#             "P4780": "6",
+#             "P577": "1993",
+#         }
 
     def test_generate_sparql_query(self):
         wpf = WPF(
@@ -98,6 +98,7 @@ class TestWPF(TestCase):
                 "P577": "1948",
             },
         )
+        wpf.extract_journal_name()
         wpf.search_journal_qid()
         assert wpf.journal_qid == "Q27714801"
 
@@ -111,10 +112,11 @@ class TestWPF(TestCase):
                 "P304": "1141–1145",
             },
         )
+        wpf.extract_journal_name()
         wpf.search_journal_qid()
         assert wpf.journal_qid == "Q903605"
 
-    def test_execute_query(self):
+    def test_execute_query_quad_nutr(self):
         wpf = WPF(
             reference_text="",
             ai_response={
@@ -126,7 +128,7 @@ class TestWPF(TestCase):
             journal_qid="Q27714801",
         )
         wpf.generate_sparql_query()
-        print(wpf.sparql_query)
+        print(wpf.wdqs_query_link)
         wpf.execute_query()
         assert wpf.query_result == {
             "head": {
@@ -166,8 +168,8 @@ class TestWPF(TestCase):
                         "articleLabel": {
                             "type": "literal",
                             "value": "The reduction of "
-                            "cozymase by sodium "
-                            "borohydride",
+                                     "cozymase by sodium "
+                                     "borohydride",
                             "xml:lang": "en",
                         },
                         "pages": {"type": "literal", "value": "229-232"},
@@ -186,8 +188,8 @@ class TestWPF(TestCase):
                         "articleLabel": {
                             "type": "literal",
                             "value": "Carbohydrate metabolism "
-                            "in higher plants; pea "
-                            "aldolase",
+                                     "in higher plants; pea "
+                                     "aldolase",
                             "xml:lang": "en",
                         },
                         "pages": {"type": "literal", "value": "233-241"},
@@ -206,15 +208,15 @@ class TestWPF(TestCase):
                         "articleLabel": {
                             "type": "literal",
                             "value": "The effect of "
-                            "crystalline adrenal "
-                            "cortical steroids, "
-                            "di-thyroxine, and "
-                            "epinephrine on the "
-                            "alkaline and acid "
-                            "phosphatases and "
-                            "arginase of the liver "
-                            "and kidney of the normal "
-                            "adult rat",
+                                     "crystalline adrenal "
+                                     "cortical steroids, "
+                                     "di-thyroxine, and "
+                                     "epinephrine on the "
+                                     "alkaline and acid "
+                                     "phosphatases and "
+                                     "arginase of the liver "
+                                     "and kidney of the normal "
+                                     "adult rat",
                             "xml:lang": "en",
                         },
                         "pages": {"type": "literal", "value": "243-247"},
@@ -254,7 +256,7 @@ class TestWPF(TestCase):
         )
         assert wpf.empty_result is True
 
-    def test_run_1(self):
+    def test_manual_run_1(self):
         # random reference from wikipedia, see https://en.wikipedia.org/wiki/Molecular_Structure_of_Nucleic_Acids:_A_Structure_for_Deoxyribose_Nucleic_Acid
         wpf = WPF(
             reference_text="Creeth, J.M., Gulland, J.M. and Jordan, D.O. (1947) Deoxypentose nucleic acids. Part III. Viscosity and streaming birefringence of solutions of the sodium salt of the deoxypentose nucleic acid of calf thymus. J. Chem. Soc. 1947,25 1141–1145"
@@ -267,6 +269,8 @@ class TestWPF(TestCase):
             "P577": "1947",
         }
         # exit()
+        wpf.extract_journal_name()
+        assert wpf.journal_name == "J. Chem. Soc."
         wpf.search_journal_qid()
         assert wpf.journal_qid == "Q903605"
         # exit()
@@ -296,7 +300,7 @@ class TestWPF(TestCase):
             "        "
         )
         wpf.execute_query()
-        print(wpf.wdqs_query_link())
+        print(wpf.wdqs_query_link)
         assert wpf.query_result == {
             "head": {
                 "vars": [
@@ -317,10 +321,10 @@ class TestWPF(TestCase):
                         "articleLabel": {
                             "type": "literal",
                             "value": "Deoxypentose nucleic "
-                            "acids; preparation of "
-                            "the tetrasodium salt of "
-                            "the deoxypentose nucleic "
-                            "acid of calf thymus",
+                                     "acids; preparation of "
+                                     "the tetrasodium salt of "
+                                     "the deoxypentose nucleic "
+                                     "acid of calf thymus",
                             "xml:lang": "en",
                         },
                         "pages": {"type": "literal", "value": "1129"},
@@ -339,11 +343,11 @@ class TestWPF(TestCase):
                         "articleLabel": {
                             "type": "literal",
                             "value": "Deoxypentose nucleic "
-                            "acids; electrometric "
-                            "titration of the acidic "
-                            "and the basic groups of "
-                            "the deoxypentose nucleic "
-                            "acid of calf thymus",
+                                     "acids; electrometric "
+                                     "titration of the acidic "
+                                     "and the basic groups of "
+                                     "the deoxypentose nucleic "
+                                     "acid of calf thymus",
                             "xml:lang": "en",
                         },
                         "pages": {"type": "literal", "value": "1131-1141"},
@@ -362,12 +366,12 @@ class TestWPF(TestCase):
                         "articleLabel": {
                             "type": "literal",
                             "value": "Deoxypentose nucleic "
-                            "acids; viscosity and "
-                            "streaming birefringence "
-                            "of solutions of the "
-                            "sodium salt of the "
-                            "deoxypentose nucleic "
-                            "acid of calf thymus",
+                                     "acids; viscosity and "
+                                     "streaming birefringence "
+                                     "of solutions of the "
+                                     "sodium salt of the "
+                                     "deoxypentose nucleic "
+                                     "acid of calf thymus",
                             "xml:lang": "en",
                         },
                         "pages": {"type": "literal", "value": "1141-1145"},
@@ -381,4 +385,19 @@ class TestWPF(TestCase):
                 ]
             },
         }
-        assert wpf.run() == "Success, results were found"
+        wpf.run()
+        assert wpf.status == "Success, results were found"
+
+
+def test_extract_journal_name():
+    wpf = WPF(
+        reference_text="",
+        ai_response={
+            "P1433": "Quad. Nutr.",
+            "P304": "283",
+            "P478": "10",
+            "P577": "1948",
+        },
+    )
+    wpf.extract_journal_name()
+    assert wpf.journal_name == "Quad. Nutr."

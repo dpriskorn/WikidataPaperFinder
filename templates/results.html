@@ -34,13 +34,19 @@
                 </tbody>
             </table>
         {% else %}
-            <p>No results found.</p>
+            <p>{{ wpf.status }}</p>
         {% endif %}
 
         <!-- Display the reference text -->
         <div class="mt-4">
             <h4>Reference Text</h4>
             <p>{{ request.args.get('reference_text') or 'No reference text provided.' }}</p>
+        </div>
+
+        <!-- Display the AI response -->
+        <div class="mt-4">
+            <h4>AI response to the prompt asking it to extract the reference</h4>
+            <p>{{ wpf.ai_response or 'No AI response available.' }}</p>
         </div>
 
         <!-- Display the journal name and link -->
@@ -58,7 +64,7 @@
         <!-- Link to the SPARQL query -->
         <div class="mt-4">
             <h4>SPARQL Query</h4>
-            <a href="{{ wpf.wdqs_query_link() }}" target="_blank">Open query in WDQS</a>
+            <a href="{{ wpf.wdqs_query_link }}" target="_blank">Open query in WDQS</a>
         </div>
     </div>
 

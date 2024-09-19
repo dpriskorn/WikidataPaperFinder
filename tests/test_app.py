@@ -5,6 +5,7 @@ from unittest.mock import patch
 # Mock class to simulate WPF object
 class MockWPF_without_results:
     def __init__(self):
+        self.status = "test"
         self.query_result = {}
         self.journal_label_en = "Example Journal"
         self.wikidata_journal_link = "http://www.wikidata.org/entity/Q12345"
@@ -16,6 +17,7 @@ class MockWPF_without_results:
 
 class MockWPF_with_results:
     def __init__(self):
+        self.status = "test"
         self.query_result = {
             "head": {
                 "vars": [
