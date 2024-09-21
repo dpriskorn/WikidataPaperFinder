@@ -11,28 +11,33 @@ class TestWPF(TestCase):
     def test_ask_ai_ruffo(self):
         wpf = WPF(reference_text="Ruffo, A. (1948). Quad. Nutr. 10, 283.")
         wpf.ask_ai()
-        assert wpf.ai_response == {'journal': 'Quad. Nutr.', 'pages': '283', 'volume': '10', 'year': '1948'}
+        assert wpf.ai_response == {
+            "journal": "Quad. Nutr.",
+            "pages": "283",
+            "volume": "10",
+            "year": "1948",
+        }
 
-#     def test_ask_ai_qs(self):
-#         wpf = WPF(
-#             reference_text="""	CREATE
-# 	LAST	P31	Q23927052
-# 	LAST	Len	"Complete solution of the eight-puzzle and the benefit of node ordering in IDA"
-# 	LAST	P304	"248-253"
-# 	LAST	P577	+1993-01-01T00:00:00Z/9
-# 	LAST	P1104	6
-# 	LAST	P1476	en:"Complete solution of the eight-puzzle and the benefit of node ordering in IDA"
-# 	LAST	P2093	"Alexander Reinefeld"	P1545	"1"
-# """
-#         )
-#         wpf.ask_ai()
-#         assert wpf.ai_response == {
-#             "journal": "Complete solution of the eight-puzzle and the benefit of node "
-#                      "ordering in IDA",
-#             "pages": "248-253",
-#             "P4780": "6",
-#             "year": "1993",
-#         }
+    #     def test_ask_ai_qs(self):
+    #         wpf = WPF(
+    #             reference_text="""	CREATE
+    # 	LAST	P31	Q23927052
+    # 	LAST	Len	"Complete solution of the eight-puzzle and the benefit of node ordering in IDA"
+    # 	LAST	P304	"248-253"
+    # 	LAST	P577	+1993-01-01T00:00:00Z/9
+    # 	LAST	P1104	6
+    # 	LAST	P1476	en:"Complete solution of the eight-puzzle and the benefit of node ordering in IDA"
+    # 	LAST	P2093	"Alexander Reinefeld"	P1545	"1"
+    # """
+    #         )
+    #         wpf.ask_ai()
+    #         assert wpf.ai_response == {
+    #             "journal": "Complete solution of the eight-puzzle and the benefit of node "
+    #                      "ordering in IDA",
+    #             "pages": "248-253",
+    #             "P4780": "6",
+    #             "year": "1993",
+    #         }
 
     def test_generate_sparql_query(self):
         wpf = WPF(

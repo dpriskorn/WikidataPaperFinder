@@ -8,10 +8,12 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+
 @app.errorhandler(500)
 def internal_error(error):
     # Render the custom 500 error page
-    return render_template('500.html'), 500
+    return render_template("500.html"), 500
+
 
 @app.route("/", methods=["GET"])
 def index():

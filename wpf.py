@@ -46,8 +46,13 @@ class WPF(BaseModel):
             self.status = f"Got invalid data form AI. Required fields: journal, year, volume, pages. '{self.ai_response}'"
 
     def generate_sparql_query(self) -> None:
-        if not self.journal_qid or not self.year or not self.volume or not self.start_page:
-            self.status = ("Missing data.")
+        if (
+            not self.journal_qid
+            or not self.year
+            or not self.volume
+            or not self.start_page
+        ):
+            self.status = "Missing data."
             return
         self.sparql_query = f"""
         SELECT ?article ?articleLabel ?volume ?pages ?publicationDate WHERE {{
@@ -105,7 +110,6 @@ class WPF(BaseModel):
         self.extract_volume()
         self.extract_pages()
         self.extract_start_page()
-
 
     def extract_start_page(self):
         if self.pages:
