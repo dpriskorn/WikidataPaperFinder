@@ -18,6 +18,8 @@
                         <th>Volume</th>
                         <th>Pages</th>
                         <th>Publication Date</th>
+                        <th>Author Name</th> <!-- Added Author Name column -->
+                        <th>Author</th> <!-- Added Author column -->
                     </tr>
                 </thead>
                 <tbody>
@@ -29,6 +31,22 @@
                             <td>{{ binding.pages.value }}</td>
                             <!-- Simplify the date format -->
                             <td>{{ binding.publicationDate.value | replace('T00:00:00Z', '') }}</td>
+                            <!-- Display author name string if available -->
+                            <td>
+                                {% if binding.authorNames %}
+                                    {{ binding.authorNames.value }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <!-- Display linked author entity if available -->
+                            <td>
+                                {% if binding.authorLabels %}
+                                    <a href="{{ binding.authorLabels.value }}">{{ binding.authorLabels.value }}</a>
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>

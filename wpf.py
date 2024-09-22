@@ -56,21 +56,34 @@ class WPF(BaseModel):
             self.status = "Missing data."
             return
         self.sparql_query = f"""
-        SELECT ?article ?articleLabel ?volume ?pages ?publicationDate WHERE {{
+        SELECT 
+          ?article 
+          ?articleLabel 
+          ?volume 
+          ?pages 
+          ?publicationDate 
+          (GROUP_CONCAT(?authorName; separator="; ") AS ?authorNames) 
+          # authorLabel should be auto-populated by the label service 
+          (GROUP_CONCAT(?authorLabel; separator="; ") AS ?authorLabels)
+        WHERE {{
           BIND ( wd:{self.journal_qid} AS ?journal ) .
           BIND ( {self.year} AS ?year ) .
           BIND ( "{self.volume}" AS ?volume ) .
           BIND ( {self.start_page} AS ?startPage ) .
           BIND ( 15 AS ?range ) .
-          
+
           ?article wdt:P1433 ?journal; wdt:P478 ?volume; wdt:P304 ?pages; wdt:P577 ?publicationDate .
-        
+
+          OPTIONAL {{ ?article wdt:P2093 ?authorName . }}  # Author name string (P2093)
+          OPTIONAL {{ ?article wdt:P50 ?author . }}       # Author (P50)
+
           FILTER( YEAR( ?publicationDate ) = ?year ) .
           BIND( REPLACE( ?pages,"(\\\\d*).*","$1" ) AS ?start ) .
           FILTER( ( xsd:integer(?start) < ?startPage + ?range ) && ( xsd:integer(?start) > ?startPage - ?range ) ) .
-          
+
           SERVICE wikibase:label {{ bd:serviceParam wikibase:language "[AUTO_LANGUAGE],mul,en" . }}
         }}
+        GROUP BY ?article ?articleLabel ?volume ?pages ?publicationDate
         ORDER BY ASC(xsd:integer(?start))
         """
 
