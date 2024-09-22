@@ -54,7 +54,7 @@ class TestWPF(TestCase):
             volume="176",
             journal_qid="Q27714801",
         )
-        wpf.generate_sparql_query()
+        wpf.generate_full_sparql_query()
         print(wpf.status)
         assert wpf.sparql_query == (
             "\n"

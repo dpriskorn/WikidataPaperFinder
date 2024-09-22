@@ -61,10 +61,13 @@
             {% endif %}
         </div>
 
-        <!-- Link to the SPARQL query -->
+        <!-- Link to the SPARQL queries -->
         <div class="mt-4">
-            <h4>SPARQL Query</h4>
-            <a href="{{ wpf.wdqs_query_link }}" target="_blank">Open query in WDQS</a>
+            <h4>SPARQL Queries</h4>
+            <ul class="list-unstyled">
+                <li><a href="{{ wpf.wdqs_full_query_link }}" target="_blank">Full query in WDQS</a></li>
+                <li><a href="{{ wpf.wdqs_year_volume_query_link }}" target="_blank">Query in WDQS that lists all articles in this volume and year</a></li>
+            </ul>
         </div>
     </div>
 

@@ -23,13 +23,14 @@ class WPF(BaseModel):
     query_result: dict = {}
     status: str = ""
     query_executed: bool = False
+    wdqs_base_url: str = "https://query.wikidata.org/#"
 
     def ask_ai(self):
         ddgs = DDGS()
         prompt = (
-            "Please extract the journal, year, volume, and page number from this reference in a paper "
-            "and give me the result as an one line unformatted JSON object with the keys ['journal', 'year', 'volume', 'pages'], "
-            "don't format as time, just return strings. Copy the journal name verbatim, only output the JSON: "
+            "Please extract the title, journal, year, volume, and page number from this reference in a paper "
+            "and give me the result as an one line unformatted JSON object with the keys ['title', 'journal', 'year', 'volume', 'pages'], "
+            "don't format as time, just return strings or empty strings. Copy the journal name verbatim, only output the JSON: "
             f'"{self.reference_text}"'
         )
         text = ddgs.chat(
@@ -45,7 +46,7 @@ class WPF(BaseModel):
         if not self.is_valid_data():
             self.status = f"Got invalid data form AI. Required fields: journal, year, volume, pages. '{self.ai_response}'"
 
-    def generate_sparql_query(self) -> None:
+    def generate_full_sparql_query(self) -> None:
         if (
             not self.journal_qid
             or not self.year
@@ -71,6 +72,31 @@ class WPF(BaseModel):
           SERVICE wikibase:label {{ bd:serviceParam wikibase:language "[AUTO_LANGUAGE],mul,en" . }}
         }}
         ORDER BY ASC(xsd:integer(?start))
+        """
+
+    @property
+    def generate_year_volume_sparql_query(self) -> str:
+        """This is only used as a url so we don't store it in the object for now"""
+        if (
+                not self.journal_qid
+                or not self.year
+                or not self.volume
+        ):
+            self.status = "Missing data."
+            return ""
+        return f"""
+        SELECT ?article ?articleLabel ?volume ?pages ?publicationDate WHERE {{
+          BIND ( wd:{self.journal_qid} AS ?journal ) .
+          BIND ( {self.year} AS ?year ) .
+          BIND ( "{self.volume}" AS ?volume ) .
+
+          ?article wdt:P1433 ?journal; wdt:P478 ?volume; wdt:P304 ?pages; wdt:P577 ?publicationDate .
+
+          FILTER( YEAR( ?publicationDate ) = ?year ) .
+
+          SERVICE wikibase:label {{ bd:serviceParam wikibase:language "[AUTO_LANGUAGE],mul,en" . }}
+        }}
+        ORDER BY ASC(xsd:integer(?pages))
         """
 
     def is_valid_data(self):
@@ -176,7 +202,7 @@ class WPF(BaseModel):
 
         # Step: Generate the SPARQL query
         if not self.sparql_query:
-            self.generate_sparql_query()
+            self.generate_full_sparql_query()
             if not self.sparql_query:
                 self.status += " Could not generate sparql query"
 
@@ -209,15 +235,19 @@ class WPF(BaseModel):
         return False
 
     @property
-    def wdqs_query_link(self):
+    def wdqs_full_query_link(self):
         if self.sparql_query:
-            return f"https://query.wikidata.org/#{quote(self.sparql_query)}"
+            return f"{self.wdqs_base_url}{quote(self.sparql_query)}"
         else:
             return ""
 
     @property
-    def wikidata_journal_link(self):
+    def wikidata_journal_link(self) -> str:
         if self.journal_qid:
             return f"https://wikidata.org/wiki/{self.journal_qid}"
         else:
             return ""
+
+    @property
+    def wdqs_year_volume_query_link(self) -> str:
+        return f"{self.wdqs_base_url}{quote(self.generate_year_volume_sparql_query)}"
